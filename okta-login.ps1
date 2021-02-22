@@ -5,13 +5,11 @@ function mfaPush {
         $pushFactorId,
         $session
     )
-    
     Write-Output "Sending Okta Verify push notification..."
     $status = "MFA_CHALLENGE"
     $tries = 0
     $body = '{"stateToken":"' + $stateToken + '"}'
     $url = 'https://' + $oktadomain + '/api/v1/authn/factors/' + $pushFactorId[0] + '/verify'
-
     while ($status -eq "MFA_CHALLENGE" -and $tries -lt 60 ) {
         $verifyAndPoll = iwr  $url  `
             -WebSession $session `
@@ -25,14 +23,14 @@ function mfaPush {
     }
     if ( $status -ne "SUCCESS" ) {
         Write-Output "MFA failed. Try again."
-    }  else {
-        $sessionToken=$verifyAndPoll.sessionToken
-        $url='https://' + $oktadomain + '/login/sessionCookieRedirect?checkAccountSetupComplete=true&token='+$sessionToken+'&redirectUrl=https%3A%2F%2F'+$oktadomain+'.'+$oktadomain+'%2Fuser%2Fnotifications'
-        $sessionId=iwr $url -WebSession $session  
+    }
+    else {
+        $sessionToken = $verifyAndPoll.sessionToken
+        $url = 'https://' + $oktadomain + '/login/sessionCookieRedirect?checkAccountSetupComplete=true&token=' + $sessionToken + '&redirectUrl=https%3A%2F%2F' + $oktadomain + '.' + $oktadomain + '%2Fuser%2Fnotifications'
+        $sessionId = iwr $url -WebSession $session  
         write-output "logged in" 
     }
-    return $sessionToken, $sessionId,$session
-
+    return $sessionToken, $sessionId, $session
 }   
 
 function okta-login {
